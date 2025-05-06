@@ -9,7 +9,7 @@ from isaaclab.controllers import DifferentialIKControllerCfg, OperationalSpaceCo
 from isaaclab.managers.action_manager import ActionTerm, ActionTermCfg
 from isaaclab.utils import configclass
 
-from . import binary_joint_actions, joint_actions, joint_actions_to_limits, non_holonomic_actions, task_space_actions
+from . import binary_joint_actions, joint_actions, joint_actions_to_limits, non_holonomic_actions, task_space_actions, packing_actions
 
 ##
 # Joint actions.
@@ -310,3 +310,11 @@ class OperationalSpaceControllerActionCfg(ActionTermCfg):
     Note: Functional only when ``nullspace_control`` is set to ``"position"`` within the
         ``OperationalSpaceControllerCfg``.
     """
+
+@configclass
+class PackingActionCfg(ActionTermCfg):
+    """Configuration for the packing action term.
+
+    See :class:`PackingAction` for more details.
+    """
+    class_type: type[ActionTerm] = packing_actions.PackingAction

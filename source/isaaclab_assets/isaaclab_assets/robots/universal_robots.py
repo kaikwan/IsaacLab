@@ -15,7 +15,7 @@ Reference: https://github.com/ros-industrial/universal_robot
 import isaaclab.sim as sim_utils
 from isaaclab.actuators import ImplicitActuatorCfg
 from isaaclab.assets.articulation import ArticulationCfg
-from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
+from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR, ISAAC_NUCLEUS_DIR
 
 ##
 # Configuration
@@ -50,5 +50,11 @@ UR10_CFG = ArticulationCfg(
             damping=40.0,
         ),
     },
+)
+
+UR5_CFG = UR10_CFG.replace(
+    spawn=sim_utils.UsdFileCfg(
+        usd_path=f"{ISAAC_NUCLEUS_DIR}/Robots/UniversalRobots/ur5/ur5.usd",
+    ),
 )
 """Configuration of UR-10 arm using implicit actuator models."""
