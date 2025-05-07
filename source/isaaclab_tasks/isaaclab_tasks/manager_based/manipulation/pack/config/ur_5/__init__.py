@@ -13,7 +13,7 @@ from . import agents
 
 gym.register(
     id="Isaac-Pack-UR5-v0",
-    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    entry_point="isaaclab.envs:ManagerBasedRLGCUEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": f"{__name__}.joint_pos_env_cfg:UR5PackEnvCfg",
@@ -25,7 +25,7 @@ gym.register(
 
 gym.register(
     id="Isaac-Pack-UR5-Play-v0",
-    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    entry_point="isaaclab.envs:ManagerBasedRLGCUEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": f"{__name__}.joint_pos_env_cfg:UR5PackEnvCfg_PLAY",

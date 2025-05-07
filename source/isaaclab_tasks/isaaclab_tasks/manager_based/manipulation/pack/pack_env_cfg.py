@@ -22,15 +22,16 @@ from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR, ISAACLAB_NUCLEUS_DIR
 from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
 
 import isaaclab_tasks.manager_based.manipulation.pack.mdp as mdp
+from isaaclab_tasks.manager_based.manipulation.pack.utils.gcu_cfg import GCUCfg
 
 ##
 # Scene definition
 ##
 import os
-tote_usd_path = f"gcu_objects/assets/yellow_tote/model/model_new_flatten.usd"
+tote_usd_path = f"gcu_objects/assets/yellow_tote/model.usd"
 tote_usd_abs_path = os.path.abspath(tote_usd_path)
 
-num_object_per_env = 2
+num_object_per_env = 40
 
 
 @configclass
@@ -84,7 +85,8 @@ class PackSceneCfg(InteractiveSceneCfg):
                     ],
                     random_choice=True,
                     rigid_props=sim_utils.RigidBodyPropertiesCfg(
-                        disable_gravity=False,
+                        kinematic_enabled=False,
+                        disable_gravity=True,
                     ),
                 ),
                 init_state=RigidObjectCfg.InitialStateCfg(pos=(i / 5.0, 0.0, 2.0)),
@@ -160,7 +162,14 @@ class EventCfg:
     #     },
     # )
 
+    obj_volume = EventTerm(
+        func=mdp.object_volume,
+        params={"asset_cfgs": [SceneEntityCfg(f"object{i + 1}") for i in range(num_object_per_env)], "num_objects": num_object_per_env},
+        mode="startup")
+    
     reset_all = EventTerm(func=mdp.reset_scene_to_default, mode="reset")
+    
+    # TODO (kaikwan): Add calculate GCU on reset
 
 
 @configclass
@@ -197,7 +206,7 @@ class RewardsCfg:
 @configclass
 class TerminationsCfg:
     """Termination terms for the MDP."""
-    time_out = DoneTerm(func=mdp.time_out, time_out=True)
+    # time_out = DoneTerm(func=mdp.time_out, time_out=True)
 
 
 @configclass
@@ -213,6 +222,9 @@ class CurriculumCfg:
     #     func=mdp.modify_reward_weight, params={"term_name": "joint_vel", "weight": -0.001, "num_steps": 4500}
     # )
 
+@configclass
+class GCUCfg:
+    num_object_per_env: int = num_object_per_env
 
 ##
 # Environment configuration
@@ -234,6 +246,7 @@ class PackEnvCfg(ManagerBasedRLEnvCfg):
     terminations: TerminationsCfg = TerminationsCfg()
     events: EventCfg = EventCfg()
     curriculum: CurriculumCfg = CurriculumCfg()
+    gcu: GCUCfg = GCUCfg()
 
     def __post_init__(self):
         """Post initialization."""

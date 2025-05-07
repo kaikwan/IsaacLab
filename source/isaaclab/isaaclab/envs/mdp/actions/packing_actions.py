@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import isaaclab.sim as sim_utils
 import torch
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
@@ -15,6 +16,8 @@ from isaacsim.core.prims import XFormPrim
 import isaaclab.utils.string as string_utils
 from isaaclab.assets.asset_base import AssetBase
 from isaaclab.managers.action_manager import ActionTerm
+from isaaclab.sim import schemas
+from isaaclab.sim.schemas import schemas_cfg
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedEnv
@@ -94,19 +97,33 @@ class PackingAction(ActionTerm):
         #     )
 
     def reset(self, env_ids: Sequence[int] | None = None) -> None:
-        self._raw_actions[env_ids] = torch.zeros_like(self._raw_actions[env_ids])
+        if env_ids is None:
+            self._raw_actions[:] = torch.zeros_like(self._raw_actions)
+        else:
+            self._raw_actions[env_ids] = torch.zeros_like(self._raw_actions[env_ids])
     
     def apply_actions(self):
         # first index is object id, the rest are position and orientation for the object
         # get the object id
-        object_ids = self._processed_actions[:, 0].long() + 1
+        object_ids = self._processed_actions[:, 0].long()
         # get the position and orientation
         position = self._processed_actions[:, 1:4]
         # print("position", position)
         orientation = self._processed_actions[:, 4:8]
         # get the object
         for idx, object_id in enumerate(object_ids):
+            if object_id == 0:
+                continue
             asset = self._env.scene[f"object{object_id.item()}"]
             orientation[idx, 0] = 1
+            prim_paths = sim_utils.find_matching_prim_paths(asset.cfg.prim_path) # TODO: just split string to write env num
+            prim_path = prim_paths[idx]
+            schemas.modify_rigid_body_properties(prim_path, schemas_cfg.RigidBodyPropertiesCfg(
+                    kinematic_enabled=False,
+                    disable_gravity=False,
+                ))
             asset.write_root_link_pose_to_sim(torch.cat([position[idx], orientation[idx]]), env_ids=torch.tensor([idx], device=self.device))
             asset.write_root_com_velocity_to_sim(torch.zeros(6, device=self.device), env_ids=torch.tensor([idx], device=self.device))
+        self._env.gcu.put_objects_in_totes(object_ids)
+        if torch.any(object_ids > 0):
+            print("GCU is:", self._env.gcu.get_gcus())

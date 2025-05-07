@@ -12,7 +12,7 @@ from . import agents
 
 gym.register(
     id="Isaac-Pack-NoArm-v0",
-    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    entry_point="isaaclab.envs:ManagerBasedRLGCUEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": f"{__name__}.joint_pos_env_cfg:NoArmPackEnvCfg",
@@ -24,7 +24,7 @@ gym.register(
 
 gym.register(
     id="Isaac-Pack-NoArm-Play-v0",
-    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    entry_point="isaaclab.envs:ManagerBasedRLGCUEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": f"{__name__}.joint_pos_env_cfg:NoArmPackEnvCfg_PLAY",
@@ -36,7 +36,7 @@ gym.register(
 
 gym.register(
     id="Isaac-Pack-NoArm-Camera-v0",
-    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    entry_point="isaaclab.envs:ManagerBasedRLGCUEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": f"{__name__}.joint_pos_camera_env_cfg:NoArmPackCameraEnvCfg",
@@ -48,7 +48,7 @@ gym.register(
 
 gym.register(
     id="Isaac-Pack-NoArm-Camera-Play-v0",
-    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    entry_point="isaaclab.envs:ManagerBasedRLGCUEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": f"{__name__}.joint_pos_camera_env_cfg:NoArmPackCameraEnvCfg",
