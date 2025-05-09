@@ -8,8 +8,9 @@ import torch
 
 class GCU:
     def __init__(self, cfg, env):
-        self.tote_dim = torch.tensor([54, 35, 26], device=env.device)  # in cm
-        self.tote_volume = torch.prod(self.tote_dim).item()
+        self.planning_tote_dim = torch.tensor([54, 35, 35], device=env.device)  # in cm
+        self.true_tote_dim = torch.tensor([54, 35, 26], device=env.device)  # in cm
+        self.tote_volume = torch.prod(self.true_tote_dim).item()
         self.obj_volumes = None
         self.obj_bboxes = None
         self.obj_T_bottomleft = None
@@ -34,7 +35,7 @@ class GCU:
         """Mark specified objects as placed in the tote."""
         if self.obj_volumes is None:
             raise ValueError("Object volumes not set.")
-        object_ids -= 1  # Assuming object IDs are 1-based
+        object_ids -= 1  # object IDs are 1-based
         rows = torch.arange(self.num_envs, device=self.device)
         self.obj_in_tote[rows, object_ids] = 1
 

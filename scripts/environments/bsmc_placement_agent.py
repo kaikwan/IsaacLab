@@ -61,9 +61,9 @@ def main():
     env.reset()
 
     num_bins = [
-        env.unwrapped.gcu.tote_dim[0] // args_cli.discretize_factor,
-        env.unwrapped.gcu.tote_dim[1] // args_cli.discretize_factor,
-        env.unwrapped.gcu.tote_dim[2] // args_cli.discretize_factor,
+        env.unwrapped.gcu.planning_tote_dim[0] // args_cli.discretize_factor,
+        env.unwrapped.gcu.planning_tote_dim[1] // args_cli.discretize_factor,
+        env.unwrapped.gcu.planning_tote_dim[2] // args_cli.discretize_factor,
     ]
 
     blocks = env.unwrapped.gcu.obj_bboxes
@@ -92,22 +92,22 @@ def main():
         visualize_board_voxels(board)
         place_poses = get_place_poses_from_placements(sequence, id_to_index, block, flip=True)
 
-    def compute_place_pos_tote_centered(obj_pos, obj_rotated_dims, tote_dim):
+    def compute_place_pos_tote_centered(obj_pos, obj_rotated_dims, planning_tote_dim):
         """
         Compute the position of the object in the tote's coordinate system.
         obj_pos: The 3D position of the object in the tote coordinate,
                  where the origin is at the bottom left corner of the tote.
         obj_rotated_dims: The dimensions of the object after it has been rotated,
                            represented as a 3D tensor (length, width, height).
-        tote_dim: The dimensions of the tote in the world coordinate system,
+        planning_tote_dim: The dimensions of the tote in the world coordinate system,
                   represented as a 3D tensor (length, width, height).
         """
         obj_pos = obj_pos.float() + obj_rotated_dims / 2  # Shift the object to its center
         obj_pos_tote = -obj_pos
 
         place_pos_tote = torch.zeros(3, device=obj_pos_tote.device)
-        place_pos_tote[0] = obj_pos_tote[0] + tote_dim[0] / 2
-        place_pos_tote[1] = obj_pos_tote[1] + tote_dim[1] / 2
+        place_pos_tote[0] = obj_pos_tote[0] + planning_tote_dim[0] / 2
+        place_pos_tote[1] = obj_pos_tote[1] + planning_tote_dim[1] / 2
         place_pos_tote[2] = torch.abs(obj_pos_tote[2])
 
         return place_pos_tote
@@ -130,7 +130,7 @@ def main():
                 obj_rotated_dims = torch.tensor(obj_info["rotated_dims"], device=env.unwrapped.device) * 5
 
                 place_pos_tote = (
-                    compute_place_pos_tote_centered(obj_pos, obj_rotated_dims, env.unwrapped.gcu.tote_dim) / 100.0
+                    compute_place_pos_tote_centered(obj_pos, obj_rotated_dims, env.unwrapped.gcu.planning_tote_dim) / 100.0
                 )  # convert to meters
 
                 # TODO (kaikwan): clamp the tote position to the tote dimensions
