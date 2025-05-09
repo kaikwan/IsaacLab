@@ -128,6 +128,6 @@ class PackingAction(ActionTerm):
             asset.write_root_com_velocity_to_sim(
                 torch.zeros(6, device=self.device), env_ids=torch.tensor([idx], device=self.device)
             )
-        self._env.gcu.put_objects_in_totes(object_ids)
+            self._env.gcu.put_objects_in_totes(object_ids)
         if torch.any(object_ids > 0):
             print("GCU is:", self._env.gcu.get_gcus())
