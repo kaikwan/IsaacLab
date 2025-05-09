@@ -6,4 +6,3 @@
 """This sub-module contains the functions that are specific to the gcu environments."""
 
 from .gcu import *  # noqa: F401, F403
-from .gcu_cfg import *  # noqa: F401, F403

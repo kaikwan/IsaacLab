@@ -1,3 +1,6 @@
 [submodule "gcu_objects"]
 	path = gcu_objects
 	url = https://github.com/kaikwan/gcu_objects.git
+[submodule "pyconsolidation"]
+	path = pyconsolidation
+	url = https://github.com/kaikwan/pyconsolidation.git

@@ -4,31 +4,29 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import builtins
-import torch
-from collections.abc import Sequence
 import gymnasium as gym
-from typing import Any
+import torch
 
-import isaacsim.core.utils.torch as torch_utils
 import omni.log
-from isaacsim.core.simulation_manager import SimulationManager
 
-from isaaclab.managers import ActionManager, EventManager, ObservationManager, RecorderManager
+from isaaclab.managers import EventManager
 from isaaclab.scene import InteractiveScene
 from isaaclab.sim import SimulationContext
 from isaaclab.utils.timer import Timer
+
 from isaaclab_tasks.manager_based.manipulation.pack.utils.gcu import GCU
 
-
-from .ui import ViewportCameraController
 from .manager_based_rl_env import ManagerBasedRLEnv
 from .manager_based_rl_env_cfg import ManagerBasedRLEnvCfg
+from .ui import ViewportCameraController
+
 
 class ManagerBasedRLGCUEnv(ManagerBasedRLEnv, gym.Env):
     """Base class for GCU environments.
 
     This class is a subclass of `Manager
     """
+
     def __init__(self, cfg: ManagerBasedRLEnvCfg, render_mode: str | None = None, **kwargs):
         """Initialize the environment.
 
@@ -157,5 +155,3 @@ class ManagerBasedRLGCUEnv(ManagerBasedRLEnv, gym.Env):
         self.metadata["render_fps"] = 1 / self.step_dt
 
         print("[INFO]: Completed setting up the environment...")
-
-        

@@ -3,13 +3,9 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import math
-
 from isaaclab.utils import configclass
 
-import isaaclab_tasks.manager_based.manipulation.reach.mdp as mdp
 from isaaclab_tasks.manager_based.manipulation.pack.pack_camera_env_cfg import PackResNet18DepthCameraEnvCfg
-
 
 ##
 # Environment configuration
@@ -24,6 +20,7 @@ class NoArmPackCameraEnvCfg(PackResNet18DepthCameraEnvCfg):
 
         # switch robot to franka
         self.scene.robot = None
+
 
 @configclass
 class NoArmPackCameraEnvCfg_PLAY(NoArmPackCameraEnvCfg):

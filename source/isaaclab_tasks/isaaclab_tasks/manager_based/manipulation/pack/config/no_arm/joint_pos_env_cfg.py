@@ -3,13 +3,10 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-import math
-
 from isaaclab.utils import configclass
 
 import isaaclab_tasks.manager_based.manipulation.reach.mdp as mdp
 from isaaclab_tasks.manager_based.manipulation.pack.pack_env_cfg import PackEnvCfg
-
 
 ##
 # Environment configuration
@@ -25,7 +22,8 @@ class NoArmPackEnvCfg(PackEnvCfg):
         # switch robot to franka
         self.scene.robot = None
 
-        self.actions.packing_action = mdp.PackingActionCfg(asset_name="tote") # tote is placeholder, not used
+        self.actions.packing_action = mdp.PackingActionCfg(asset_name="tote")
+
 
 @configclass
 class NoArmPackEnvCfg_PLAY(NoArmPackEnvCfg):

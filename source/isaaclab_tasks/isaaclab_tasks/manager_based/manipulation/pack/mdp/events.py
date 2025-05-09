@@ -5,40 +5,40 @@
 
 from __future__ import annotations
 
-import isaaclab.sim as sim_utils
 import torch
 from typing import TYPE_CHECKING
 
+from pxr import UsdGeom
+
+import isaaclab.sim as sim_utils
 from isaaclab.assets import RigidObject
 from isaaclab.managers import SceneEntityCfg
-from pxr import UsdGeom
 
 if TYPE_CHECKING:
     from isaaclab.envs import ManagerBasedRLGCUEnv
 
 
-
-def object_volume(env: ManagerBasedRLGCUEnv, 
-                  env_ids: torch.Tensor,
-                  asset_cfgs: list[SceneEntityCfg] = [SceneEntityCfg("object1")],
-                  num_objects: int = 1,
-                  ) -> torch.Tensor:
+def object_props(
+    env: ManagerBasedRLGCUEnv,
+    env_ids: torch.Tensor,
+    asset_cfgs: list[SceneEntityCfg] = [SceneEntityCfg("object1")],
+    num_objects: int = 1,
+) -> torch.Tensor:
     """The volume of the object."""
-    
+
     def find_meshes(prim):
         meshes = []
         if prim.IsA(UsdGeom.Mesh):
             meshes.append(UsdGeom.Mesh(prim))
         for child in prim.GetChildren():
             meshes.extend(find_meshes(child))
-        return meshes # [UsdGeom.Mesh(Usd.Prim(</World/envs/env_1/Object1/_04_sugar_box>))]
+        return meshes
 
     def compute_mesh_volume(mesh):
         """Compute volume of a triangulated, watertight mesh using PyTorch.
         Assumes 1 unit = 1 cm (0.01 meters).
         """
         meters_per_unit = 0.01  # 1 unit = 1 cm (0.01 meters)
-        scale_factor = meters_per_unit ** 3  # Convert to cubic meters, but we'll print in cubic centimeters
 
         # Get mesh attributes
         points_attr = mesh.GetPointsAttr()
@@ -64,11 +64,33 @@ def object_volume(env: ManagerBasedRLGCUEnv,
         dot = torch.sum(cross * v2, dim=1)
         volume = torch.sum(dot) / 6.0
 
-        return volume.abs().item() * (meters_per_unit ** 3) * 1e6  # Convert to cubic centimeters (1 m^3 = 1e6 cm^3)
+        return volume.abs().item() * (meters_per_unit**3) * 1e6  # Convert to cubic centimeters (1 m^3 = 1e6 cm^3)
+
+    def compute_mesh_bbox(mesh):
+        """Compute the l, w, h bounding box of a mesh."""
+        points_attr = mesh.GetPointsAttr()
+        points = torch.tensor(points_attr.Get(), dtype=torch.float32)
+        min_coords = torch.min(points, dim=0).values
+        max_coords = torch.max(points, dim=0).values
+        bbox = max_coords - min_coords
+        bbox = bbox[[2, 0, 1]]  # Reorder to (l, w, h)
+        return bbox
+
+    def compute_mesh_bottomleft(mesh):
+        points = torch.tensor(mesh.GetPointsAttr().Get(), dtype=torch.float32)
+        min_coords = torch.min(points, dim=0).values
+        center_coords = torch.mean(points, dim=0)
+        T_bottomleft = torch.eye(4, device=env.device)
+        T_bottomleft[:3, 3] = min_coords - center_coords
+        return T_bottomleft
 
     # Cache for storing volumes of already computed objects
     obj_volumes = torch.zeros((env.num_envs, num_objects), device=env.device)
+    obj_bboxes = torch.zeros((env.num_envs, num_objects, 3), device=env.device)
+    obj_T_bottomleft = torch.zeros((env.num_envs, num_objects, 4, 4), device=env.device)
     volume_cache = {}
+    bbox_cache = {}
+    T_bottomleft_cache = {}
 
     # Get mesh from the asset
     for asset_cfg in asset_cfgs:
@@ -77,14 +99,27 @@ def object_volume(env: ManagerBasedRLGCUEnv,
         for prim_path in sim_utils.find_matching_prim_paths(prim_path_expr):
             prim = env.scene.stage.GetPrimAtPath(prim_path)
             for mesh in find_meshes(prim):
-                mesh_name = mesh.GetPath().__str__().split('/')[-1]  # Extract the last portion of the path
-                env_idx = int(mesh.GetPath().__str__().split('/')[3].split('_')[-1])
-                obj_idx = int(''.join(filter(str.isdigit, mesh.GetPath().__str__().split('/')[4]))) - 1
-                if mesh_name in volume_cache:
+                mesh_name = mesh.GetPath().__str__().split("/")[-1]  # Extract the last portion of the path
+                env_idx = int(mesh.GetPath().__str__().split("/")[3].split("_")[-1])
+                obj_idx = int("".join(filter(str.isdigit, mesh.GetPath().__str__().split("/")[4]))) - 1
+                if mesh_name in volume_cache and mesh_name in bbox_cache and mesh_name in T_bottomleft_cache:
                     volume = volume_cache[mesh_name]
+                    bbox = bbox_cache[mesh_name]
+                    T_bottomleft = T_bottomleft_cache[mesh_name]
                 else:
                     volume = compute_mesh_volume(mesh)
-                    volume_cache[mesh_name] = volume  # Cache the computed volume
+                    bbox = compute_mesh_bbox(mesh)
+                    T_bottomleft = compute_mesh_bottomleft(mesh)
+
+                    # Cache the computed values
+                    volume_cache[mesh_name] = volume
+                    bbox_cache[mesh_name] = bbox
+                    T_bottomleft_cache[mesh_name] = T_bottomleft
+
                 obj_volumes[env_idx, obj_idx] = volume
-                print("Volume of", mesh_name, obj_idx, "in env", env_idx, "is", volume)
+                obj_bboxes[env_idx, obj_idx] = bbox
+                obj_T_bottomleft[env_idx, obj_idx] = T_bottomleft
+
     env.gcu.set_object_volume(obj_volumes)
+    env.gcu.set_object_bbox(obj_bboxes)
+    env.gcu.set_object_T_bottomleft(obj_T_bottomleft)

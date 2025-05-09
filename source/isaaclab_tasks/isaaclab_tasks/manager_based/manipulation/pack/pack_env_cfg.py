@@ -3,35 +3,30 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+##
+# Scene definition
+##
+import os
 from dataclasses import MISSING
 
 import isaaclab.sim as sim_utils
 from isaaclab.assets import ArticulationCfg, AssetBaseCfg, RigidObjectCfg
 from isaaclab.envs import ManagerBasedRLEnvCfg
 from isaaclab.managers import ActionTermCfg as ActionTerm
-from isaaclab.managers import CurriculumTermCfg as CurrTerm
 from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
-from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
-from isaaclab.managers import TerminationTermCfg as DoneTerm
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.utils import configclass
-from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR, ISAACLAB_NUCLEUS_DIR
-from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
+from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 
 import isaaclab_tasks.manager_based.manipulation.pack.mdp as mdp
-from isaaclab_tasks.manager_based.manipulation.pack.utils.gcu_cfg import GCUCfg
 
-##
-# Scene definition
-##
-import os
-tote_usd_path = f"gcu_objects/assets/yellow_tote/model.usd"
+tote_usd_path = "gcu_objects/assets/yellow_tote/model.usd"
 tote_usd_abs_path = os.path.abspath(tote_usd_path)
 
-num_object_per_env = 40
+num_object_per_env = 10
 
 
 @configclass
@@ -73,24 +68,30 @@ class PackSceneCfg(InteractiveSceneCfg):
 
     def __post_init__(self):
         for i in range(num_object_per_env):
-            setattr(self, f"object{i+1}", RigidObjectCfg(
-                prim_path=f"{{ENV_REGEX_NS}}/Object{i+1}",
-                spawn=sim_utils.MultiUsdFileCfg(
-                    usd_path=[
-                        f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/003_cracker_box.usd",
-                        f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/004_sugar_box.usd",
-                        f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
-                        f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/006_mustard_bottle.usd"
-                        
-                    ],
-                    random_choice=True,
-                    rigid_props=sim_utils.RigidBodyPropertiesCfg(
-                        kinematic_enabled=False,
-                        disable_gravity=True,
+            setattr(
+                self,
+                f"object{i+1}",
+                RigidObjectCfg(
+                    prim_path=f"{{ENV_REGEX_NS}}/Object{i+1}",
+                    spawn=sim_utils.MultiUsdFileCfg(
+                        usd_path=[
+                            f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/003_cracker_box.usd",
+                            f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/004_sugar_box.usd",
+                            f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
+                            f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/006_mustard_bottle.usd",
+                        ],
+                        random_choice=True,
+                        rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                            kinematic_enabled=False,
+                            disable_gravity=True,
+                        ),
+                        # collision_props=sim_utils.CollisionPropertiesCfg(
+                        #     collision_enabled=False,
+                        # ),
                     ),
+                    init_state=RigidObjectCfg.InitialStateCfg(pos=(i / 5.0, 0.0, 2.0)),
                 ),
-                init_state=RigidObjectCfg.InitialStateCfg(pos=(i / 5.0, 0.0, 2.0)),
-            ))
+            )
 
 
 ##
@@ -101,6 +102,7 @@ class PackSceneCfg(InteractiveSceneCfg):
 @configclass
 class CommandsCfg:
     """Command terms for the MDP."""
+
     pass
     # ee_pose = mdp.UniformPoseCommandCfg(
     #     asset_name="robot",
@@ -163,18 +165,23 @@ class EventCfg:
     # )
 
     obj_volume = EventTerm(
-        func=mdp.object_volume,
-        params={"asset_cfgs": [SceneEntityCfg(f"object{i + 1}") for i in range(num_object_per_env)], "num_objects": num_object_per_env},
-        mode="startup")
-    
+        func=mdp.object_props,
+        params={
+            "asset_cfgs": [SceneEntityCfg(f"object{i + 1}") for i in range(num_object_per_env)],
+            "num_objects": num_object_per_env,
+        },
+        mode="startup",
+    )
+
     reset_all = EventTerm(func=mdp.reset_scene_to_default, mode="reset")
-    
+
     # TODO (kaikwan): Add calculate GCU on reset
 
 
 @configclass
 class RewardsCfg:
     """Reward terms for the MDP."""
+
     pass
 
     # # task terms
@@ -206,12 +213,14 @@ class RewardsCfg:
 @configclass
 class TerminationsCfg:
     """Termination terms for the MDP."""
+
     # time_out = DoneTerm(func=mdp.time_out, time_out=True)
 
 
 @configclass
 class CurriculumCfg:
     """Curriculum terms for the MDP."""
+
     pass
 
     # action_rate = CurrTerm(
@@ -222,9 +231,11 @@ class CurriculumCfg:
     #     func=mdp.modify_reward_weight, params={"term_name": "joint_vel", "weight": -0.001, "num_steps": 4500}
     # )
 
+
 @configclass
 class GCUCfg:
-    num_object_per_env: int = num_object_per_env
+    num_object_per_env = num_object_per_env
+
 
 ##
 # Environment configuration

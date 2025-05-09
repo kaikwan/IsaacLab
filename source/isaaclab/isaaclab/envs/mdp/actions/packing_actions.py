@@ -5,16 +5,14 @@
 
 from __future__ import annotations
 
-import isaaclab.sim as sim_utils
 import torch
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
-import omni.log
-
 from isaacsim.core.prims import XFormPrim
+
+import isaaclab.sim as sim_utils
 import isaaclab.utils.string as string_utils
-from isaaclab.assets.asset_base import AssetBase
 from isaaclab.managers.action_manager import ActionTerm
 from isaaclab.sim import schemas
 from isaaclab.sim.schemas import schemas_cfg
@@ -32,7 +30,7 @@ class PackingAction(ActionTerm):
 
     _asset: XFormPrim
     """The asset on which the placement action is applied."""
-    
+
     _clip: torch.Tensor
     """The clip applied to the input action."""
 
@@ -42,7 +40,6 @@ class PackingAction(ActionTerm):
 
         # get pose of the asset
         self._asset_state = self._asset.get_world_poses()
-        
 
         # create tensors for raw and processed actions
         self._raw_actions = torch.zeros(self.num_envs, 8, device=self.device)
@@ -82,11 +79,10 @@ class PackingAction(ActionTerm):
     def process_actions(self, actions: torch.Tensor):
         # store the raw actions
         self._raw_actions[:] = actions
-        
         self._processed_actions = self._raw_actions.clone()
 
         # get the position and orientation
-        # offset to center of the tote if zero actions 
+        # offset to center of the tote if zero actions
         self._processed_actions[:, 1:4] += self._asset_state[0]
         # z offset to displace the object above the table
         self._processed_actions[:, 1:4] += torch.tensor([0, 0, 0.1], device=self.device)
@@ -101,7 +97,7 @@ class PackingAction(ActionTerm):
             self._raw_actions[:] = torch.zeros_like(self._raw_actions)
         else:
             self._raw_actions[env_ids] = torch.zeros_like(self._raw_actions[env_ids])
-    
+
     def apply_actions(self):
         # first index is object id, the rest are position and orientation for the object
         # get the object id
@@ -115,15 +111,23 @@ class PackingAction(ActionTerm):
             if object_id == 0:
                 continue
             asset = self._env.scene[f"object{object_id.item()}"]
-            orientation[idx, 0] = 1
-            prim_paths = sim_utils.find_matching_prim_paths(asset.cfg.prim_path) # TODO: just split string to write env num
+            prim_paths = sim_utils.find_matching_prim_paths(
+                asset.cfg.prim_path
+            )  # TODO (kaikwan): just split string to write env num
             prim_path = prim_paths[idx]
-            schemas.modify_rigid_body_properties(prim_path, schemas_cfg.RigidBodyPropertiesCfg(
+            schemas.modify_rigid_body_properties(
+                prim_path,
+                schemas_cfg.RigidBodyPropertiesCfg(
                     kinematic_enabled=False,
                     disable_gravity=False,
-                ))
-            asset.write_root_link_pose_to_sim(torch.cat([position[idx], orientation[idx]]), env_ids=torch.tensor([idx], device=self.device))
-            asset.write_root_com_velocity_to_sim(torch.zeros(6, device=self.device), env_ids=torch.tensor([idx], device=self.device))
+                ),
+            )
+            asset.write_root_link_pose_to_sim(
+                torch.cat([position[idx], orientation[idx]]), env_ids=torch.tensor([idx], device=self.device)
+            )
+            asset.write_root_com_velocity_to_sim(
+                torch.zeros(6, device=self.device), env_ids=torch.tensor([idx], device=self.device)
+            )
         self._env.gcu.put_objects_in_totes(object_ids)
         if torch.any(object_ids > 0):
             print("GCU is:", self._env.gcu.get_gcus())
