@@ -26,7 +26,9 @@ import isaaclab_tasks.manager_based.manipulation.pack.mdp as mdp
 tote_usd_path = "gcu_objects/assets/yellow_tote/model.usd"
 tote_usd_abs_path = os.path.abspath(tote_usd_path)
 
-num_object_per_env = 10
+vention_table_usd_path = "gcu_objects/assets/vention/vention.usd"
+
+num_object_per_env = 1
 
 
 @configclass
@@ -37,15 +39,15 @@ class PackSceneCfg(InteractiveSceneCfg):
     ground = AssetBaseCfg(
         prim_path="/World/ground",
         spawn=sim_utils.GroundPlaneCfg(),
-        init_state=AssetBaseCfg.InitialStateCfg(pos=(0.0, 0.0, -1.05)),
+        init_state=AssetBaseCfg.InitialStateCfg(pos=(0.0, 0.0, -0.76)),
     )
 
     table = AssetBaseCfg(
         prim_path="{ENV_REGEX_NS}/Table",
         spawn=sim_utils.UsdFileCfg(
-            usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Mounts/SeattleLabTable/table_instanceable.usd",
+            usd_path=vention_table_usd_path,
         ),
-        init_state=AssetBaseCfg.InitialStateCfg(pos=(0.55, 0.0, 0.0), rot=(0.70711, 0.0, 0.0, 0.70711)),
+        init_state=AssetBaseCfg.InitialStateCfg(pos=(0.45, 0.0, -0.0), rot=(0.70711, 0.0, 0.0, 0.70711)),
     )
 
     tote = AssetBaseCfg(
@@ -58,7 +60,8 @@ class PackSceneCfg(InteractiveSceneCfg):
     )
 
     # robots
-    robot: ArticulationCfg = MISSING
+    right_robot: ArticulationCfg = MISSING
+    left_robot: ArticulationCfg = MISSING
 
     # lights
     light = AssetBaseCfg(
@@ -75,10 +78,27 @@ class PackSceneCfg(InteractiveSceneCfg):
                     prim_path=f"{{ENV_REGEX_NS}}/Object{i+1}",
                     spawn=sim_utils.MultiUsdFileCfg(
                         usd_path=[
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/002_master_chef_can.usd",
                             f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/003_cracker_box.usd",
                             f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/004_sugar_box.usd",
                             f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
                             f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/006_mustard_bottle.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/007_tuna_fish_can.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/008_pudding_box.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/009_gelatin_box.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/010_potted_meat_can.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/011_banana.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/019_pitcher_base.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/021_bleach_cleanser.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/024_bowl.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/025_mug.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/035_power_drill.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/036_wood_block.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/037_scissors.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/040_large_marker.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/051_large_clamp.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/052_extra_large_clamp.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/061_foam_brick.usd",
                         ],
                         random_choice=True,
                         rigid_props=sim_utils.RigidBodyPropertiesCfg(
@@ -124,9 +144,9 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    # arm_action: ActionTerm = MISSING
+    arm_action: ActionTerm | None = None
     gripper_action: ActionTerm | None = None
-    packing_action: mdp.PackingAction = MISSING
+    packing_action: mdp.PackingAction | None = None
 
 
 @configclass
@@ -155,14 +175,7 @@ class ObservationsCfg:
 class EventCfg:
     """Configuration for events."""
 
-    # reset_robot_joints = EventTerm(
-    #     func=mdp.reset_joints_by_scale,
-    #     mode="reset",
-    #     params={
-    #         "position_range": (0.5, 1.5),
-    #         "velocity_range": (0.0, 0.0),
-    #     },
-    # )
+    # reset_robot_joints = EventTerm | None
 
     obj_volume = EventTerm(
         func=mdp.object_props,

@@ -5,6 +5,8 @@
 
 import math
 
+from isaaclab.assets import ArticulationCfg
+from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.utils import configclass
 
 import isaaclab_tasks.manager_based.manipulation.reach.mdp as mdp
@@ -27,22 +29,59 @@ class UR5PackEnvCfg(PackEnvCfg):
         # post init of parent
         super().__post_init__()
 
-        # switch robot to ur10
-        self.scene.robot = UR5_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
-        # override events
-        self.events.reset_robot_joints.params["position_range"] = (0.75, 1.25)
-        # override rewards
-        self.rewards.end_effector_position_tracking.params["asset_cfg"].body_names = ["wrist_3_link"]
-        self.rewards.end_effector_position_tracking_fine_grained.params["asset_cfg"].body_names = ["wrist_3_link"]
-        self.rewards.end_effector_orientation_tracking.params["asset_cfg"].body_names = ["wrist_3_link"]
-        # override actions
-        self.actions.arm_action = mdp.JointPositionActionCfg(
-            asset_name="robot", joint_names=[".*"], scale=0.5, use_default_offset=True
+        self.scene.right_robot = UR5_CFG.replace(
+            prim_path="{ENV_REGEX_NS}/RightRobot",
+            init_state=ArticulationCfg.InitialStateCfg(
+                pos=(0.9, 0.33, 0.75),
+                rot=(0, -0.7071068, 0, 0.7071068),
+                joint_pos={
+                    "shoulder_pan_joint": 0.0,
+                    "shoulder_lift_joint": -1.712,
+                    "elbow_joint": 1.712,
+                    "wrist_1_joint": 0.0,
+                    "wrist_2_joint": 0.0,
+                    "wrist_3_joint": 0.0,
+                },
+            ),
         )
+
+        self.scene.left_robot = UR5_CFG.replace(
+            prim_path="{ENV_REGEX_NS}/LeftRobot",
+            init_state=ArticulationCfg.InitialStateCfg(
+                pos=(0.9, -0.33, 0.75),
+                rot=(0, -0.7071068, 0, 0.7071068),
+                joint_pos={
+                    "shoulder_pan_joint": 0.0,
+                    "shoulder_lift_joint": -1.712,
+                    "elbow_joint": 1.712,
+                    "wrist_1_joint": 0.0,
+                    "wrist_2_joint": 0.0,
+                    "wrist_3_joint": 0.0,
+                },
+            ),
+        )
+        # override events
+        # self.events.reset_robot_joints = EventTerm(
+        #     func=mdp.reset_joints_by_scale,
+        #     mode="reset",
+        #     params={
+        #         "position_range": (0.5, 1.5),
+        #         "velocity_range": (0.0, 0.0),
+        #     },
+        # )
+        # self.events.reset_robot_joints.params["position_range"] = (0.75, 1.25)
+        # override rewards
+        # self.rewards.end_effector_position_tracking.params["asset_cfg"].body_names = ["wrist_3_link"]
+        # self.rewards.end_effector_position_tracking_fine_grained.params["asset_cfg"].body_names = ["wrist_3_link"]
+        # self.rewards.end_effector_orientation_tracking.params["asset_cfg"].body_names = ["wrist_3_link"]
+        # override actions
+        # self.actions.arm_action = mdp.JointPositionActionCfg(
+        #     asset_name="robot", joint_names=[".*"], scale=0.5, use_default_offset=True
+        # )
         # override command generator body
         # end-effector is along x-direction
-        self.commands.ee_pose.body_name = "wrist_3_link"
-        self.commands.ee_pose.ranges.pitch = (math.pi / 2, math.pi / 2)
+        # self.commands.ee_pose.body_name = "wrist_3_link"
+        # self.commands.ee_pose.ranges.pitch = (math.pi / 2, math.pi / 2)
 
 
 @configclass

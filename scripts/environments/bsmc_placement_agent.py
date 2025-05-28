@@ -78,11 +78,11 @@ def main():
         start = time.time()
         board_and_seq = monte_carlo_beam_search(
             block,
-            W=num_bins[0],
-            H=num_bins[2],
-            D=num_bins[1],
+            W=int(num_bins[0]),
+            H=int(num_bins[2]),
+            D=int(num_bins[1]),
             allow_rotations=True,
-            beam_width=5,
+            beam_width=3,
             sample_size=3,
             trials=1,
         )
@@ -130,13 +130,20 @@ def main():
                 obj_rotated_dims = torch.tensor(obj_info["rotated_dims"], device=env.unwrapped.device) * 5
 
                 place_pos_tote = (
-                    compute_place_pos_tote_centered(obj_pos, obj_rotated_dims, env.unwrapped.gcu.planning_tote_dim) / 100.0
+                    compute_place_pos_tote_centered(obj_pos, obj_rotated_dims, env.unwrapped.gcu.planning_tote_dim)
+                    / 100.0
                 )  # convert to meters
 
                 # TODO (kaikwan): clamp the tote position to the tote dimensions
                 #   No need currently since bbox is an overestimate
-                # place_pos_tote = torch.clamp(place_pos_tote, min=xxx, max=yyy)
 
+                place_pos_tote = torch.clamp(
+                    place_pos_tote,
+                    min=place_pos_tote - obj_rotated_dims / 200,
+                    max=place_pos_tote + obj_rotated_dims / 200,
+                )
+                # Hack to make place pose lower
+                place_pos_tote[2] = place_pos_tote[2] * 0.8
                 actions[:, 0] = obj_idx + 1
                 actions[:, 1:4] = torch.tensor(place_pos_tote, device=env.unwrapped.device)
                 actions[:, 4:8] = torch.tensor(place_rot_tote, device=env.unwrapped.device)

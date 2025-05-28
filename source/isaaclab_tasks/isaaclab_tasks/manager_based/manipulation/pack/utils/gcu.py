@@ -8,7 +8,7 @@ import torch
 
 class GCU:
     def __init__(self, cfg, env):
-        self.planning_tote_dim = torch.tensor([54, 35, 35], device=env.device)  # in cm
+        self.planning_tote_dim = torch.tensor([54, 40, 40], device=env.device)  # in cm
         self.true_tote_dim = torch.tensor([54, 35, 26], device=env.device)  # in cm
         self.tote_volume = torch.prod(self.true_tote_dim).item()
         self.obj_volumes = None
