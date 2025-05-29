@@ -28,7 +28,7 @@ tote_usd_abs_path = os.path.abspath(tote_usd_path)
 
 vention_table_usd_path = "gcu_objects/assets/vention/vention.usd"
 
-num_object_per_env = 1
+num_object_per_env = 2
 
 
 @configclass
@@ -56,12 +56,30 @@ class PackSceneCfg(InteractiveSceneCfg):
             usd_path=tote_usd_abs_path,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(kinematic_enabled=True),
         ),
-        init_state=AssetBaseCfg.InitialStateCfg(pos=(0.55, 0.0, 0.0)),
+        init_state=AssetBaseCfg.InitialStateCfg(pos=(0.45, 0.0, 0.0)),
     )
 
+    # tote2 = AssetBaseCfg(
+    #     prim_path="{ENV_REGEX_NS}/Tote2",
+    #     spawn=sim_utils.UsdFileCfg(
+    #         usd_path=tote_usd_abs_path,
+    #         rigid_props=sim_utils.RigidBodyPropertiesCfg(kinematic_enabled=True),
+    #     ),
+    #     init_state=AssetBaseCfg.InitialStateCfg(pos=(0.45, 0.42, 0.0)),
+    # )
+
+    # tote3 = AssetBaseCfg(
+    #     prim_path="{ENV_REGEX_NS}/Tote3",
+    #     spawn=sim_utils.UsdFileCfg(
+    #         usd_path=tote_usd_abs_path,
+    #         rigid_props=sim_utils.RigidBodyPropertiesCfg(kinematic_enabled=True),
+    #     ),
+    #     init_state=AssetBaseCfg.InitialStateCfg(pos=(0.45, -0.42, 0.0)),
+    # )
+
     # robots
-    right_robot: ArticulationCfg = MISSING
-    left_robot: ArticulationCfg = MISSING
+    right_robot: ArticulationCfg | None = None
+    left_robot: ArticulationCfg | None = None
 
     # lights
     light = AssetBaseCfg(
@@ -79,10 +97,10 @@ class PackSceneCfg(InteractiveSceneCfg):
                     spawn=sim_utils.MultiUsdFileCfg(
                         usd_path=[
                             "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/002_master_chef_can.usd",
-                            f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/003_cracker_box.usd",
-                            f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/004_sugar_box.usd",
-                            f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
-                            f"{ISAAC_NUCLEUS_DIR}/Props/YCB/Axis_Aligned_Physics/006_mustard_bottle.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/003_cracker_box.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/004_sugar_box.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/005_tomato_soup_can.usd",
+                            "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/006_mustard_bottle.usd",
                             "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/007_tuna_fish_can.usd",
                             "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/008_pudding_box.usd",
                             "/home/henri/isaacsim_assets/Assets/Isaac/4.5/Isaac/Props/YCB/Axis_Aligned_Physics/009_gelatin_box.usd",

@@ -11,6 +11,7 @@ The following configuration parameters are available:
 
 Reference: https://github.com/ros-industrial/universal_robot
 """
+import os
 
 import isaaclab.sim as sim_utils
 from isaaclab.actuators import ImplicitActuatorCfg
@@ -52,9 +53,12 @@ UR10_CFG = ArticulationCfg(
     },
 )
 
+ur5_path = "gcu_objects/assets/ur_description/ur5e_instanceable.usd"
+ur5_abs_path = os.path.abspath(ur5_path)
+
 UR5_CFG = UR10_CFG.replace(
     spawn=sim_utils.UsdFileCfg(
-        usd_path=f"{ISAAC_NUCLEUS_DIR}/Robots/UniversalRobots/ur5/ur5.usd",
+        usd_path=ur5_abs_path,
     ),
 )
 """Configuration of UR-10 arm using implicit actuator models."""

@@ -36,11 +36,11 @@ class UR5PackEnvCfg(PackEnvCfg):
                 rot=(0, -0.7071068, 0, 0.7071068),
                 joint_pos={
                     "shoulder_pan_joint": 0.0,
-                    "shoulder_lift_joint": -1.712,
-                    "elbow_joint": 1.712,
-                    "wrist_1_joint": 0.0,
-                    "wrist_2_joint": 0.0,
-                    "wrist_3_joint": 0.0,
+                    "shoulder_lift_joint": -2.2,
+                    "elbow_joint": 1.9,
+                    "wrist_1_joint": -1.383,
+                    "wrist_2_joint": -1.57,
+                    "wrist_3_joint": 0.00,
                 },
             ),
         )
@@ -52,11 +52,11 @@ class UR5PackEnvCfg(PackEnvCfg):
                 rot=(0, -0.7071068, 0, 0.7071068),
                 joint_pos={
                     "shoulder_pan_joint": 0.0,
-                    "shoulder_lift_joint": -1.712,
-                    "elbow_joint": 1.712,
-                    "wrist_1_joint": 0.0,
-                    "wrist_2_joint": 0.0,
-                    "wrist_3_joint": 0.0,
+                    "shoulder_lift_joint": -2.2,
+                    "elbow_joint": 1.9,
+                    "wrist_1_joint": 1.383,
+                    "wrist_2_joint": 1.57,
+                    "wrist_3_joint": 0.00,
                 },
             ),
         )
