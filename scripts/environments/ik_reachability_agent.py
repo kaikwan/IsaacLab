@@ -25,7 +25,7 @@ parser.add_argument(
     default=False,
 )
 
-parser.add_argument("--robot", type=str, default="ur5e.yml", help="robot configuration to load")
+parser.add_argument("--robot", type=str, default="ur5e_robotiq_2f_140.yml", help="robot configuration to load")
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
 # parse the arguments
@@ -121,7 +121,7 @@ def main():
 
     target = cuboid.VisualCuboid(
         "/World/target",
-        position=np.array([0.5, 0, 0.5]),
+        position=np.array([0.5, 0, 0.05]),
         orientation=np.array([0, 1, 0, 0]),
         color=np.array([1.0, 0, 0]),
         size=0.05,
@@ -296,7 +296,17 @@ def main():
             past_pose = cube_position
             if cmd_plan is not None and step_index % 20 == 0 and True:
                 cmd_state = cmd_plan[cmd_idx]
-                robot.set_dof_positions(cmd_state.position, torch.tensor(idx_list, dtype=torch.int32, device=cmd_state.position.device))
+                # Pad for gripper positions if necessary
+                expected_size = robot.get_metatype(0).dof_count
+                current_size = cmd_state.position.shape[0]
+                if current_size < expected_size:
+                    padded_position = torch.cat(
+                        [cmd_state.position, torch.zeros(expected_size - current_size, device=cmd_state.position.device)]
+                    )
+                else:
+                    padded_position = cmd_state.position
+
+                robot.set_dof_positions(padded_position, torch.tensor(idx_list, dtype=torch.int32, device=padded_position.device))
                 # set desired joint angles obtained from IK:
                 # articulation_controller.apply_action(art_action)
                 cmd_idx += 1
@@ -306,11 +316,11 @@ def main():
                     
                     # apply actions
                     robot.set_dof_positions(
-                        torch.tensor(default_config, dtype=torch.float32, device=cmd_state.position.device),
-                        torch.tensor(idx_list, dtype=torch.int32, device=cmd_state.position.device)
+                        torch.tensor(default_config, dtype=torch.float32, device=padded_position.device),
+                        torch.tensor(idx_list, dtype=torch.int32, device=padded_position.device)
                     )
                 else:
-                    robot.set_dof_positions(cmd_state.position, torch.tensor(idx_list, dtype=torch.int32, device=cmd_state.position.device))
+                    robot.set_dof_positions(padded_position, torch.tensor(idx_list, dtype=torch.int32, device=padded_position.device))
 
             env.unwrapped.sim.render()
             step_index += 1

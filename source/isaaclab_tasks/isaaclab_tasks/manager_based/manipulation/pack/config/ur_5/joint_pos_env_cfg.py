@@ -15,7 +15,7 @@ from isaaclab_tasks.manager_based.manipulation.pack.pack_env_cfg import PackEnvC
 ##
 # Pre-defined configs
 ##
-from isaaclab_assets import UR5_CFG  # isort: skip
+from isaaclab_assets import UR5_ROBOTIQ_CFG  # isort: skip
 
 
 ##
@@ -29,7 +29,7 @@ class UR5PackEnvCfg(PackEnvCfg):
         # post init of parent
         super().__post_init__()
 
-        self.scene.right_robot = UR5_CFG.replace(
+        self.scene.right_robot = UR5_ROBOTIQ_CFG.replace(
             prim_path="{ENV_REGEX_NS}/RightRobot",
             init_state=ArticulationCfg.InitialStateCfg(
                 pos=(0.9, 0.33, 0.75),
@@ -45,7 +45,7 @@ class UR5PackEnvCfg(PackEnvCfg):
             ),
         )
 
-        self.scene.left_robot = UR5_CFG.replace(
+        self.scene.left_robot = UR5_ROBOTIQ_CFG.replace(
             prim_path="{ENV_REGEX_NS}/LeftRobot",
             init_state=ArticulationCfg.InitialStateCfg(
                 pos=(0.9, -0.33, 0.75),

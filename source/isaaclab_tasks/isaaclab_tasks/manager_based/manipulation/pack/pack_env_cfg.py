@@ -28,7 +28,7 @@ tote_usd_abs_path = os.path.abspath(tote_usd_path)
 
 vention_table_usd_path = "gcu_objects/assets/vention/vention.usd"
 
-num_object_per_env = 2
+num_object_per_env = 0
 
 
 @configclass

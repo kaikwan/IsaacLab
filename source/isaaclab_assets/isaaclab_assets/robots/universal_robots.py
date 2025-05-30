@@ -61,4 +61,13 @@ UR5_CFG = UR10_CFG.replace(
         usd_path=ur5_abs_path,
     ),
 )
+
+ur5_robotiq_path = "gcu_objects/assets/ur_description/ur5e_robotiq_2f_140_temp.usd"
+ur5_robotiq_abs_path = os.path.abspath(ur5_robotiq_path)
+
+UR5_ROBOTIQ_CFG = UR5_CFG.replace(
+    spawn=sim_utils.UsdFileCfg(
+        usd_path=ur5_robotiq_abs_path,
+    ),
+)
 """Configuration of UR-10 arm using implicit actuator models."""
