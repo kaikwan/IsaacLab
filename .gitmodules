@@ -4,3 +4,6 @@
 [submodule "pyconsolidation"]
 	path = pyconsolidation
 	url = https://github.com/kaikwan/pyconsolidation.git
+[submodule "curobo"]
+	path = curobo
+	url = https://github.com/NVlabs/curobo.git
