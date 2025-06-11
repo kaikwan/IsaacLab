@@ -27,6 +27,15 @@ tote_usd_path = "gcu_objects/assets/yellow_tote/model.usd"
 tote_usd_abs_path = os.path.abspath(tote_usd_path)
 
 vention_table_usd_path = "gcu_objects/assets/vention/vention.usd"
+gate_valve_usd_path = "onr_assets/gate_valve.usd"
+handwheel_valve_usd_path = "onr_assets/handwheel_valve.usd"
+quarter_valve_usd_path = "onr_assets/quarter_valve.usd"
+
+
+gate_valve_usd_path = os.path.abspath(gate_valve_usd_path)
+handwheel_valve_usd_path = os.path.abspath(handwheel_valve_usd_path)
+quarter_valve_usd_path = os.path.abspath(quarter_valve_usd_path)
+
 
 num_object_per_env = 0
 
@@ -50,14 +59,41 @@ class PackSceneCfg(InteractiveSceneCfg):
         init_state=AssetBaseCfg.InitialStateCfg(pos=(0.45, 0.0, -0.0), rot=(0.70711, 0.0, 0.0, 0.70711)),
     )
 
-    tote = AssetBaseCfg(
-        prim_path="{ENV_REGEX_NS}/Tote",
+    gate_valve = AssetBaseCfg(
+        prim_path="{ENV_REGEX_NS}/GateValve",
         spawn=sim_utils.UsdFileCfg(
-            usd_path=tote_usd_abs_path,
+            usd_path=gate_valve_usd_path,
             rigid_props=sim_utils.RigidBodyPropertiesCfg(kinematic_enabled=True),
         ),
-        init_state=AssetBaseCfg.InitialStateCfg(pos=(0.45, 0.0, 0.0)),
+        init_state=AssetBaseCfg.InitialStateCfg(pos=(0.45, 0.0, 0.0), rot=(0.70711, 0.0, 0.0, 0.70711)),
     )
+
+    handwheel_valve = AssetBaseCfg(
+        prim_path="{ENV_REGEX_NS}/HandwheelValve",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=handwheel_valve_usd_path,
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(kinematic_enabled=True),
+        ),
+        init_state=AssetBaseCfg.InitialStateCfg(pos=(0.25, 0.2, 0.0), rot=(0.70711, 0.0, 0.0, 0.70711)),
+    )
+
+    quarter_valve = AssetBaseCfg(
+        prim_path="{ENV_REGEX_NS}/QuarterValve",
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=quarter_valve_usd_path,
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(kinematic_enabled=True),
+        ),
+        init_state=AssetBaseCfg.InitialStateCfg(pos=(0.45, -0.42, 0.0), rot=(0.0, 0.0, 0.0, 1.0)),
+    )
+
+    # tote = AssetBaseCfg(
+    #     prim_path="{ENV_REGEX_NS}/Tote",
+    #     spawn=sim_utils.UsdFileCfg(
+    #         usd_path=tote_usd_abs_path,
+    #         rigid_props=sim_utils.RigidBodyPropertiesCfg(kinematic_enabled=True),
+    #     ),
+    #     init_state=AssetBaseCfg.InitialStateCfg(pos=(0.45, 0.0, 0.0)),
+    # )
 
     # tote2 = AssetBaseCfg(
     #     prim_path="{ENV_REGEX_NS}/Tote2",
@@ -162,9 +198,10 @@ class CommandsCfg:
 class ActionsCfg:
     """Action specifications for the MDP."""
 
-    arm_action: ActionTerm | None = None
-    gripper_action: ActionTerm | None = None
-    packing_action: mdp.PackingAction | None = None
+    left_arm_action: ActionTerm | None = None
+    right_arm_action: ActionTerm | None = None
+    # gripper_action: ActionTerm | None = None
+    # packing_action: mdp.PackingAction | None = None
 
 
 @configclass

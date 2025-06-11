@@ -60,6 +60,7 @@ class UR5PackEnvCfg(PackEnvCfg):
                 },
             ),
         )
+        
         # override events
         # self.events.reset_robot_joints = EventTerm(
         #     func=mdp.reset_joints_by_scale,
@@ -75,9 +76,13 @@ class UR5PackEnvCfg(PackEnvCfg):
         # self.rewards.end_effector_position_tracking_fine_grained.params["asset_cfg"].body_names = ["wrist_3_link"]
         # self.rewards.end_effector_orientation_tracking.params["asset_cfg"].body_names = ["wrist_3_link"]
         # override actions
-        # self.actions.arm_action = mdp.JointPositionActionCfg(
-        #     asset_name="robot", joint_names=[".*"], scale=0.5, use_default_offset=True
-        # )
+        self.actions.left_arm_action = mdp.JointPositionActionCfg(
+            asset_name="left_robot", joint_names=[".*"], scale=0.5, use_default_offset=True
+        )
+        self.actions.right_arm_action = mdp.JointPositionActionCfg(
+            asset_name="right_robot", joint_names=[".*"], scale=0.5, use_default_offset=True
+        )
+        
         # override command generator body
         # end-effector is along x-direction
         # self.commands.ee_pose.body_name = "wrist_3_link"
